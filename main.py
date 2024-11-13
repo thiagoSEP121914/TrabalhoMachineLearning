@@ -1,7 +1,8 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
 
 # Carregando o Conjunto de Dados
 data = pd.read_csv('./kddcup.data_10_percent_corrected', header=None)
@@ -21,6 +22,7 @@ data.columns = cols
 # Convertendo o rótulo 'target' para binário: 0 = normal, 1 = ataque
 data['binary_target'] = data['target'].apply(lambda x: 0 if x == 'normal.' else 1)
 
+# Convertendo variáveis categóricas em números
 data['protocol_type'] = data['protocol_type'].astype('category').cat.codes
 data['service'] = data['service'].astype('category').cat.codes
 data['flag'] = data['flag'].astype('category').cat.codes
@@ -48,6 +50,12 @@ print(cm)
 print("\nRelatório de Classificação:")
 print(classification_report(y_test, y_pred, target_names=['Normal', 'Ataque']))
 
+# Gerando a matriz de confusão gráfica
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Normal', 'Ataque'])
+disp.plot(cmap=plt.cm.Blues)
+plt.title('Matriz de Confusão - Modelo de Árvore de Decisão')
+plt.show()
+
 # Filtro para dados apenas anômalos (ataques)
 y_test_anomalia = y_test[y_test == 1]
 y_pred_anomalia = y_pred[y_test == 1]
@@ -58,3 +66,9 @@ print(cm_anomalia)
 
 print("\nRelatório de Classificação (Somente Ataques):")
 print(classification_report(y_test_anomalia, y_pred_anomalia, target_names=['Normal', 'Ataque'], zero_division=1))
+
+# Gerando a matriz de confusão gráfica para somente ataques
+disp_anomalia = ConfusionMatrixDisplay(confusion_matrix=cm_anomalia, display_labels=['Normal', 'Ataque'])
+disp_anomalia.plot(cmap=plt.cm.Blues)
+plt.title('Matriz de Confusão - Somente Ataques')
+plt.show()
